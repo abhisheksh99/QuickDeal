@@ -6,9 +6,9 @@ import Message from '../components/Message'
 import { addToCart, removeFromCart } from '../actions/cartActions'
 
 const CartScreen = () => {
-  const { id: productId } = useParams()  // Using useParams to get productId
+  const { id: productId } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()  // Using useNavigate for navigation
+  const navigate = useNavigate()
 
   const qty = location.search ? Number(location.search.split('=')[1]) : 1
 
@@ -16,6 +16,9 @@ const CartScreen = () => {
 
   const cart = useSelector((state) => state.cart)
   const { cartItems } = cart
+
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin  // Get user info from Redux to check if logged in
 
   useEffect(() => {
     if (productId) {
@@ -28,7 +31,11 @@ const CartScreen = () => {
   }
 
   const checkoutHandler = () => {
-    navigate('/login?redirect=shipping')  
+    if (userInfo) {
+      navigate('/shipping')  // If logged in, go to shipping
+    } else {
+      navigate('/login?redirect=shipping')  // If not logged in, go to login
+    }
   }
 
   return (
