@@ -7,12 +7,14 @@ import orderRoutes from './routes/order.routes.js'
 import { notFound,errorHandler } from './middleware/errorMiddleware.js';
 import uploadRoutes from './routes/upload.routes.js'
 import path from 'path'
+import morgan from 'morgan';
 dotenv.config();
 
 
 connectDB()
 const app = express();
 app.use(express.json())
+app.use(morgan('dev'))
 
 const __dirname=path.resolve()
 app.use('/uploads',express.static(path.join(__dirname,'/uploads')))
