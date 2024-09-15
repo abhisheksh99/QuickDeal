@@ -1,11 +1,28 @@
-import express from 'express'
-import { addOrderItems,getOrderById,updateOrderToPay ,getMyOrders} from '../controllers/orderController.js'
-import { protect } from '../middleware/authMiddleware.js'
-const Router = express.Router()
+import express from 'express';
+import {
+  addOrderItems,
+  getOrderById,
+  updateOrderToPay,
+  getMyOrders,
+  getAllOrders,updateOrderToDelivered
+} from '../controllers/orderController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
-Router.post('/', protect, addOrderItems)
-Router.get('/myorders', protect, getMyOrders) 
-Router.get('/:id', protect, getOrderById)
-Router.put('/:id/pay', protect, updateOrderToPay)
+const Router = express.Router();
 
-export default Router
+// Define routes clearly for POST and GET separately
+Router.route('/')
+  .post(protect, addOrderItems)  // POST: Add new order items
+  .get(protect, admin, getAllOrders);  // GET: Get all orders (admin only)
+
+Router.route('/myorders').get(protect, getMyOrders);  // GET: Get current user's orders
+
+Router.route('/:id')
+  .get(protect, getOrderById);  // GET: Get order by ID
+
+Router.route('/:id/pay')
+  .put(protect, updateOrderToPay);  // PUT: Update order to "Paid"
+
+Router.route('/:id/deliver').put(protect,updateOrderToDelivered)
+
+export default Router;
