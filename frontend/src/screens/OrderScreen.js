@@ -4,12 +4,13 @@ import { Button, Row, Col, ListGroup, Image, Card, ListGroupItem } from 'react-b
 import { useDispatch, useSelector } from 'react-redux';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
-import { getOrderDetails, payOrder } from '../actions/orderAction';
+import { getOrderDetails, payOrder,deliverOrder } from '../actions/orderAction';
 import axios from 'axios';
 import {PayPalButton} from 'react-paypal-button-v2'
-import { ORDER_PAY_RESET } from '../constants/orderConstants';
+import { ORDER_PAY_RESET,ORDER_DELIVER_RESET } from '../constants/orderConstants';
 
 const OrderScreen = () => {
+  const navigate=useNavigate()
   const dispatch = useDispatch();
   const { id } = useParams();
   const [sdkReady,setSdkReady] = useState(false)
@@ -20,7 +21,17 @@ const OrderScreen = () => {
   const orderPay = useSelector((state) => state.orderPay)
   const { loading:loadingPay, success:successPay } = orderPay
 
+  const orderDeliver = useSelector((state) => state.orderDeliver)
+  const { loading:loadingDeliver, success:successDeliver } = orderDeliver
+
+  const userLogin =useSelector(state=>state.userLogin)
+    const{userInfo} = userLogin
+
+
   useEffect(() => {
+    if(!userInfo){
+      navigate('/login')
+    }
     const addPaypalScript = async() =>{
       const {data:clientId} = await axios.get('/api/config/paypal')
       const script = document.createElement('script')
@@ -35,8 +46,9 @@ const OrderScreen = () => {
 
 
     }
-    if(!order || successPay){
+    if(!order || successPay || successDeliver){
       dispatch({type:ORDER_PAY_RESET})
+      dispatch({type:ORDER_DELIVER_RESET})
       dispatch(getOrderDetails(id));
     }else if(!order.isPaid){
       if(!window.paypal){
@@ -48,7 +60,7 @@ const OrderScreen = () => {
 
     
     
-  }, [dispatch, id,order,successPay]);
+  }, [dispatch, id,order,successPay,successDeliver]);
 
   const successPaymentHandler =(paymentResult) => {
     console.log(paymentResult);
@@ -63,6 +75,10 @@ const OrderScreen = () => {
         order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
       )
     : '0.00';
+
+    const deliverHandler = () => {
+      dispatch(deliverOrder(order))
+    }
 
   return loading ? (
     <Loader />
@@ -164,7 +180,14 @@ const OrderScreen = () => {
                   {loadingPay && <Loader />}
                   {!sdkReady ? <Loader />:(
                     <PayPalButton  amount = {order.totalPrice} onSuccess={successPaymentHandler}/>
+
                   )}
+                </ListGroup.Item>
+              )}
+              {loadingDeliver && <Loader />}
+              {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+                <ListGroup.Item>
+                  <Button type='button' className='btn btn-block' onClick={deliverHandler}>Mark As Delivered</Button>
                 </ListGroup.Item>
               )}
             </ListGroup>

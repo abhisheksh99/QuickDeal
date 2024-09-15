@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import Rating from "../components/Rating";
 import { useDispatch, useSelector } from "react-redux";
-import { listProductDetails } from "../actions/productActions";
+import { listProductDetails } from "../actions/productAction";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
